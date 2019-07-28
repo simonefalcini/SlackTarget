@@ -7,7 +7,7 @@ Edit logs like this:
     'targets' => [
         [
             'enabled' => true,
-            'class' => 'app\components\SlackTarget',
+            'class' => '\simonefalcini\SlackTarget\SlackTarget',
             'channel' => '#channelname',
             'async' => true,
             'hook' => 'https://hooks.slack.com/services/HOOKPATH',
