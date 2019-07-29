@@ -6,7 +6,7 @@ Edit logs like this:
     'traceLevel' => YII_DEBUG ? 3 : 0,
     'targets' => [
         [
-            'enabled' => true,
+            'enabled' => !YII_DEBUG,
             'class' => '\simonefalcini\SlackTarget\SlackTarget',
             'channel' => '#channelname',
             'username' => 'Message Sender Name',
