@@ -9,6 +9,7 @@ Edit logs like this:
             'enabled' => true,
             'class' => '\simonefalcini\SlackTarget\SlackTarget',
             'channel' => '#channelname',
+            'username' => 'Message Sender Name',
             'async' => true,
             'hook' => 'https://hooks.slack.com/services/HOOKPATH',
             'logVars' => [],

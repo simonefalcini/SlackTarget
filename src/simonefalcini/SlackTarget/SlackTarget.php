@@ -20,6 +20,7 @@ class SlackTarget extends \yii\log\Target
 {
 	public $channel;
 	public $async = true;
+	public $username = 'Yii';
 	public $hook;
 
 	function earlyFatalErrorHandler($unregister = false) {
@@ -267,6 +268,7 @@ class SlackTarget extends \yii\log\Target
 
     	$data = [
     		'channel' => $this->channel,
+    		'username' => $this->username,
 			'attachments' => $attachments,			
     	];
 
