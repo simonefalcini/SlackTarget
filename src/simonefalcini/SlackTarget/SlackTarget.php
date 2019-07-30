@@ -109,9 +109,11 @@ class SlackTarget extends \yii\log\Target
 			else {
 				if (isset($log[4])) {
 					$trace = $log[4];
-					$error_file = $trace[0]['file'];
-					$error_line = $trace[0]['line'];
-				}				
+					if (isset($trace[0])) {
+						$error_file = $trace[0]['file'];
+						$error_line = $trace[0]['line'];	
+					}
+				}
 				$error_message = $log[0];
 				$error_name = $log[2];
 
@@ -131,7 +133,7 @@ class SlackTarget extends \yii\log\Target
 			$stack_lenght = 0;
 			if (isset($trace) && is_array($trace)) {
 				foreach($trace as $stack_element) {
-					if (isset($stack_element['file']) && $stack_lenght++ < 5)
+					if (is_array($stack_element) && isset($stack_element['file']) && $stack_lenght++ < 5)
 						$stack_trace .= "\n".$stack_element['file'].':'.$stack_element['line'];
 				}
 			}
@@ -218,8 +220,8 @@ class SlackTarget extends \yii\log\Target
 			}
 
 			$post_data = '';
-			if (isset($POST) && count($POST) > 0) {
-				foreach($POST as $k => $v) {
+			if (isset($_POST) && count($_POST) > 0) {
+				foreach($_POST as $k => $v) {
 					$post_data .= "\n_".$k.":_ ".(is_array($v)?print_r($v,true):$v);
 				}
 
