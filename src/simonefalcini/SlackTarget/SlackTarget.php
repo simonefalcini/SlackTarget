@@ -66,7 +66,7 @@ class SlackTarget extends \yii\log\Target
      */
     public function export()
     {
-    	$attachments = [];
+    
     	foreach($this->messages as $log) {
 
     		$error_level = \yii\log\Logger::getLevelName($log[1]);    		
@@ -179,14 +179,14 @@ class SlackTarget extends \yii\log\Target
 					'text' => $error_type,
 				],
 			];
-
+		
 			$blocks[] = [
 				'type' => 'section',
 				'text' => [
 					'type' => 'mrkdwn',
 					'text' => $error_message,
 				],
-			];
+			];			
 
 			$blocks[] =	[
 				'type' => 'context',
@@ -213,7 +213,7 @@ class SlackTarget extends \yii\log\Target
 			if (isset($remote_ip)) {
 				$fields[] = [
 					'type' => 'mrkdwn',
-					'text' => "*Client:*\n_ASN:_ ".$remote_asn_name."\n_IP:_ ".$remote_ip."\n_Geo:_ ".$remote_geo."\n_City:_".$remote_city,
+					'text' => "*Client:*\n_ASN:_ ".$remote_asn_name."\n_IP:_ ".$remote_ip."\n_Geo:_ ".$remote_geo."\n_City:_ ".$remote_city,
 				];
 			}
 
@@ -261,15 +261,14 @@ class SlackTarget extends \yii\log\Target
 					'text' => "```STACK TRACE:".$stack_trace.'```',
 				],			
 			];
-
-			$attachments[] = ['blocks' => $blocks];
 			
     	}
 
     	$data = [
     		'channel' => $this->channel,
     		'username' => $this->username,
-			'attachments' => $attachments,			
+			'blocks' => $blocks,
+			'text' => strtoupper($error_level). ': ' . $error_message,
     	];
 
     	if ($this->async) {
