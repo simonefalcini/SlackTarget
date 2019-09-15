@@ -170,7 +170,17 @@ class SlackTarget extends \yii\log\Target
 				else {
 					$user_string = '';
 				}
-			
+			}
+			else {
+				$public_ip = '';
+				$remote_ip = '';
+				$remote_geo = '';
+				$remote_asn = '';
+				$remote_asn_name = '';
+				$geocity = '';
+				$remote_city = '';
+				$current_url = 'console';
+				$user_string = '';
 			}
 
 			$blocks = [];
