@@ -241,7 +241,7 @@ class SlackTarget extends \yii\log\Target
 				];
 			}
 
-			if (!Yii::$app->user->isGuest) {
+			if (isset(Yii::$app->user) && !Yii::$app->user->isGuest) {
 				$other_user_data = '';
 				$CUSTOM_USER_PARAMS = ['id','name','email'];
 				foreach($CUSTOM_USER_PARAMS as $param) {
