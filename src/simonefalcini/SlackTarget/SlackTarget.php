@@ -152,7 +152,7 @@ class SlackTarget extends \yii\log\Target
 			if (php_sapi_name() != "cli") {				
 				$public_ip = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR'] : '';
 				$remote_ip = IpTools::getIp();
-				$remote_geo = IpTools::getgeo($remote_ip);
+				$remote_geo = IpTools::getGeo($remote_ip);
 				$remote_asn = IpTools::getAsn($remote_ip);	
 				$remote_asn_name = isset($remote_asn['name']) ? $remote_asn['name'] : '';
 				$geocity = IpTools::getGeoCity($remote_ip);
