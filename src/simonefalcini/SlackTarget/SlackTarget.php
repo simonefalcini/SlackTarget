@@ -4,7 +4,7 @@
  * @copyright Copyright (c) Simone Falcini
  */
 
-namespace simonefalcini\SlackTarget;
+namespace app\components;
 
 use Yii;
 use yii\base\InvalidConfigException;
@@ -22,6 +22,7 @@ class SlackTarget extends \yii\log\Target
 	public $async = true;
 	public $username = 'Yii';
 	public $hook;
+    public $error_max_length = 1000;
 
 	function earlyFatalErrorHandler($unregister = false) {
 		    // Functionality for "unregistering" shutdown function
@@ -66,7 +67,7 @@ class SlackTarget extends \yii\log\Target
      */
     public function export()
     {
-    
+        
     	foreach($this->messages as $log) {
 
     		$error_level = \yii\log\Logger::getLevelName($log[1]);    		
@@ -133,16 +134,17 @@ class SlackTarget extends \yii\log\Target
 			$stack_lenght = 0;
 			if (isset($trace) && is_array($trace)) {
 				foreach($trace as $stack_element) {
-					if (is_array($stack_element) && isset($stack_element['file']) && $stack_lenght++ < 5)
-						$stack_trace .= "\n".$stack_element['file'].':'.$stack_element['line'];
+					if (is_array($stack_element) && isset($stack_element['file']) && $stack_lenght++ < 10) {
+                        if (!Yii::$app->errorHandler->isCoreFile($stack_element['file'])) {
+                            $stack_trace .= "\n".$stack_element['file'].':'.$stack_element['line'];
+                        }                        
+                    }						
 				}
 			}
 			
 			//file_put_contents( Yii::$app->getBasePath() .'/runtime/logs/testing.log' , print_r($log,true) );
 
     		$error = $log[0];
-
-			$error_type = '*'.strtoupper($error_level).'*: '.$error_name;
 
 			if (is_array($error_message)) {
 				$error_message = print_r($error_message,true);
@@ -157,19 +159,12 @@ class SlackTarget extends \yii\log\Target
 				$remote_asn_name = isset($remote_asn['name']) ? $remote_asn['name'] : '';
 				$geocity = IpTools::getGeoCity($remote_ip);
 				$remote_city = isset($geocity['city_name']) ? $geocity['city_name'] : '';
-				$current_url = '*'.Yii::$app->request->getMethod() .'*: ' .Yii::$app->request->getAbsoluteUrl();
+				$current_url = Yii::$app->request->getMethod() .': ' .Yii::$app->request->getAbsoluteUrl();
 				
 				$params = '';
 				foreach($_POST as $key => $val) {
 					$params.= "\n_".$key."_ (POST): ".print_r($val,true);
-				}				
-
-				if (!Yii::$app->user->isGuest) {
-					$user_string = "\n_User ID_: ".Yii::$app->user->id;
-				}
-				else {
-					$user_string = '';
-				}
+				}							
 			}
 			else {
 				$public_ip = '';
@@ -180,7 +175,6 @@ class SlackTarget extends \yii\log\Target
 				$geocity = '';
 				$remote_city = '';
 				$current_url = 'console';
-				$user_string = '';
 			}
 
 			$blocks = [];
@@ -188,36 +182,45 @@ class SlackTarget extends \yii\log\Target
 				'type' => 'section',
 				'text' => [
 					'type' => 'mrkdwn',
-					'text' => $error_type,
+					'text' => self::getErrorIcon($error_level).' *'.ucwords(strtolower($error_level)).':* '.$error_name,
 				],
 			];
-		
-			$blocks[] = [
+
+            $error_message = (string)$error_message;
+
+            if (mb_strlen($error_message) > $this->error_max_length) {
+                $blocks[] = [
+                    'type' => 'section',
+                    'text' => [
+                        'type' => 'mrkdwn',
+                        'text' => mb_substr($error_message,0,$this->error_max_length) . '...',
+                    ],
+                ];			
+            }
+            else {              
+                $blocks[] = [
+                    'type' => 'section',
+                    'text' => [
+                        'type' => 'mrkdwn',
+                        'text' => $error_message,
+                    ],
+                ];
+            }			
+
+            $blocks[] =	[
+			    'type' => 'divider'
+			];
+
+			$blocks[] =	[
 				'type' => 'section',
 				'text' => [
-					'type' => 'mrkdwn',
-					'text' => $error_message,
-				],
-			];			
-
-			$blocks[] =	[
-				'type' => 'context',
-				'elements' => [
-					[
-						'type' => 'mrkdwn',
-						'text' => "*File:* ".$error_file."\n*Row:* ".$error_line."\n".$current_url,
-					]
-				],
+                    'type' => 'mrkdwn',
+                    'text' => "*File:* ".$error_file."\n*Row:* ".$error_line."\n`".$current_url."`",
+                ]				
 			];
 
-			$blocks[] =	[
-				'type' => 'context',
-				'elements' => [
-					[
-						'type' => 'mrkdwn',
-						'text' => "Triggered on: ".Yii::$app->formatter->asDateTime($log[3],'medium'),
-					]
-				],
+            $blocks[] =	[
+			    'type' => 'divider'
 			];
 
 			$fields = [];
@@ -228,6 +231,11 @@ class SlackTarget extends \yii\log\Target
 					'text' => "*Client:*\n_ASN:_ ".$remote_asn_name."\n_IP:_ ".$remote_ip."\n_Geo:_ ".$remote_geo."\n_City:_ ".$remote_city,
 				];
 			}
+
+            $fields[] = [
+				'type' => 'mrkdwn',
+				'text' => "*Server:*\n_Server IP:_ ".$public_ip,
+			];
 
 			$post_data = '';
 			if (isset($_POST) && count($_POST) > 0) {
@@ -256,46 +264,70 @@ class SlackTarget extends \yii\log\Target
 				];		
 			}
 
-			$fields[] = [
-				'type' => 'mrkdwn',
-				'text' => "*Server:*\n_Server IP:_ ".$public_ip,
-			];
+			
 
 			$blocks[] = [
 				'type' => 'section',
 				'fields' => $fields,
 			];
 
+            $blocks[] =	[
+			    'type' => 'divider'
+			];
+
 			$blocks[] =	[
 				'type' => 'section',
 				'text' => [
 					'type' => 'mrkdwn',
-					'text' => "```STACK TRACE:".$stack_trace.'```',
+					'text' => "*Stack trace:*\n```".$stack_trace.'```',
 				],			
 			];
+
+            $data = [
+                'channel' => $this->channel,
+                'username' => $this->username,
+                'blocks' => $blocks,
+                'text' => strtoupper($error_level). ': ' . mb_substr((string)$error_message,0,$this->error_max_length),
+            ];
+    
+            if ($this->async) {
+                $command = 'curl -X POST --data-urlencode \'payload='.str_replace("'","'\\''",json_encode($data)).'\' '.$this->hook.' > /dev/null 2>&1 &';            
+                exec($command);
+                echo $command; 
+            }
+            else {
+                $ch = curl_init($this->hook);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+                curl_exec($ch);
+                curl_close($ch);
+            }
 			
     	}
 
-    	$data = [
-    		'channel' => $this->channel,
-    		'username' => $this->username,
-			'blocks' => $blocks,
-			'text' => strtoupper($error_level). ': ' . $error_message,
-    	];
-
-    	if ($this->async) {
-	    	$command = 'curl -X POST --data-urlencode \'payload='.str_replace("'","'\\''",json_encode($data)).'\' '.$this->hook.' > /dev/null 2>&1 &';
-			exec($command);
-		}
-		else {
-			$ch = curl_init($this->hook);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-			curl_setopt($ch, CURLOPT_POST, true);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-			curl_exec($ch);
-			curl_close($ch);
-		}
-
 	}
+
+    private static function getErrorIcon($error_name) {
+        $error_name = strtolower($error_name);
+        switch ($error_name) {
+            case 'error':
+                return ':red_circle:';
+            case 'warning':
+                return ':warning:';
+            case 'notice':
+                return ':warning:';
+            case 'deprecated':
+                return ':warning:';
+            case 'strict':
+                return ':warning:';
+            case 'exception':
+                return ':warning:';
+            case 'fatal error':
+                return ':warning:';
+            case 'parse error':
+                return ':warning:';
+        }
+    }
 	
 }
