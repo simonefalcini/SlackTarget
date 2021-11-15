@@ -293,7 +293,6 @@ class SlackTarget extends \yii\log\Target
             if ($this->async) {
                 $command = 'curl -X POST --data-urlencode \'payload='.str_replace("'","'\\''",json_encode($data)).'\' '.$this->hook.' > /dev/null 2>&1 &';            
                 exec($command);
-                echo $command; 
             }
             else {
                 $ch = curl_init($this->hook);
