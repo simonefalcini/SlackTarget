@@ -215,7 +215,7 @@ class SlackTarget extends \yii\log\Target
 				'type' => 'section',
 				'text' => [
                     'type' => 'mrkdwn',
-                    'text' => "*File:* ".$error_file."\n*Row:* ".$error_line."\n`".$current_url."`",
+                    'text' => "*File:* ".$error_file."\n*Row:* ".$error_line."\n`> ".$current_url."`",
                 ]				
 			];
 
