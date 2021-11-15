@@ -4,7 +4,7 @@
  * @copyright Copyright (c) Simone Falcini
  */
 
-namespace app\components;
+namespace simonefalcini\SlackTarget;
 
 use Yii;
 use yii\base\InvalidConfigException;
