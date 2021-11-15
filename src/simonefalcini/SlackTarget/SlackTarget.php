@@ -86,9 +86,9 @@ class SlackTarget extends \yii\log\Target
 
 			if (is_object($log[0])) {
 				$error_name = method_exists($log[0],'getName') ? $log[0]->getName() : '';
-				$error_message = $log[0]->getMessage();
-				$error_file = $log[0]->getFile();
-				$error_line = $log[0]->getLine();
+				$error_message = method_exists($log[0],'getMessage') ? $log[0]->getMessage() : '';
+				$error_file = method_exists($log[0],'getFile') ? $log[0]->getFile() : ''; 
+				$error_line = method_exists($log[0],'getLine') ? $log[0]->getLine() : '';
 				if (method_exists($log[0],'getTrace')) {
 					$trace = $log[0]->getTrace();											
 					if (isset($trace[0]['args'][0])) {
