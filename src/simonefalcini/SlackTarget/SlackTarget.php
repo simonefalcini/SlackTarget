@@ -135,7 +135,7 @@ class SlackTarget extends \yii\log\Target
 			if (isset($trace) && is_array($trace)) {
 				foreach($trace as $stack_element) {
 					if (is_array($stack_element) && isset($stack_element['file']) && $stack_lenght++ < 10) {
-                        if (!Yii::$app->errorHandler->isCoreFile($stack_element['file'])) {
+                        if (method_exists(Yii::$app->errorHandler,'isCoreFile') && !Yii::$app->errorHandler->isCoreFile($stack_element['file'])) {
                             $stack_trace .= "\n".$stack_element['file'].':'.$stack_element['line'];
                         }                        
                     }						
