@@ -211,11 +211,11 @@ class SlackTarget extends \yii\log\Target
 
 			$blocks[] =	[
 				'type' => 'section',
+				'unfurl_links' => false,
+				'unfurl_media' => false,
 				'text' => [
 					'type' => 'mrkdwn',
 					'text' => "*File:* " . $error_file . "\n*Row:* " . $error_line . "\n`> " . $current_url . "`",
-					'unfurl_links' => false,
-					'unfurl_media' => false,
 				]
 			];
 
