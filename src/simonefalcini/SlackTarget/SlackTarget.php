@@ -211,8 +211,6 @@ class SlackTarget extends \yii\log\Target
 
 			$blocks[] =	[
 				'type' => 'section',
-				//'unfurl_links' => false,
-				//'unfurl_media' => false,
 				'text' => [
 					'type' => 'mrkdwn',
 					'text' => "*File:* " . $error_file . "\n*Row:* " . $error_line . "\n`> " . $current_url . "`",
@@ -287,6 +285,8 @@ class SlackTarget extends \yii\log\Target
 				'channel' => $this->channel,
 				'username' => $this->username,
 				'blocks' => $blocks,
+				'unfurl_links' => false,
+				'unfurl_media' => false,
 				'text' => strtoupper($error_level) . ': ' . mb_substr((string)$error_message, 0, $this->error_max_length),
 			];
 
