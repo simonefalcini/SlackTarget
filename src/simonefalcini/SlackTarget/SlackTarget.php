@@ -213,7 +213,7 @@ class SlackTarget extends \yii\log\Target
 				'type' => 'section',
 				'text' => [
 					'type' => 'mrkdwn',
-					'text' => "*File:* " . $error_file . "\n*Row:* " . $error_line . "\n`> " . $current_url . "`",
+					'text' => "*File:* " . $error_file . "\n*Row:* " . $error_line . "\n`> " . mb_substr($current_url, 0, 200) . "`",
 				]
 			];
 
